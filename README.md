@@ -8,8 +8,6 @@ The Packet Filtering Firewall is a comprehensive network security solution devel
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Contribution](#contribution)
-- [License](#license)
 
 ## Introduction
 The Packet Filtering Firewall is an open-source project that provides a powerful and customizable firewall solution. It combines various security mechanisms, such as rule-based filtering, flood protection, spoofing detection, and malware scanning, to ensure the integrity and safety of your network traffic.
