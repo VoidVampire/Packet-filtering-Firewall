@@ -6,7 +6,6 @@ from rule_engine import RuleEngine
 from flood_protection import FloodProtection
 from spoof_detection import SpoofDetector
 from antivirus import Antivirus 
-from ips import IPS  # Import the IPS class
 
 import subprocess
 
@@ -17,7 +16,6 @@ class Firewall:
         self.flood_protection = FloodProtection()
         self.spoof_detector = SpoofDetector(db_path)
         self.antivirus = Antivirus()
-        self.ips = IPS()
         self.init_db()
         self.is_allow = int(input("Press 1 to spoof_detect :"))
         #self.spoof_detector.add_trusted_network('192.168.137.129')

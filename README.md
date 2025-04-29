@@ -1,14 +1,12 @@
 # 🛡️ PyFirewall - Packet Filtering Firewall
 
 [![Python](https://img.shields.io/badge/Python-3.7%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
-[![Scapy](https://img.shields.io/badge/Scapy-2.6-orange?style=for-the-badge&logo=python)](https://scapy.net/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.46-blue?style=for-the-badge&logo=sqlite)](https://www.sqlite.org/)
+[![Scapy](https://img.shields.io/badge/Scapy-2.4.5-orange?style=for-the-badge&logo=python)](https://scapy.net/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.35.5-blue?style=for-the-badge&logo=sqlite)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Kali Linux](https://img.shields.io/badge/Kali%20Linux-Compatible-purple?style=for-the-badge&logo=kali-linux)](https://www.kali.org/)
 
 A powerful Python-based packet filtering firewall with advanced security features, including IP spoofing detection, flood protection, intrusion prevention, and country-based blocking.
-
-![PyFirewall Architecture](https://via.placeholder.com/800x400?text=PyFirewall+Architecture)
 
 ## ✨ Features
 
@@ -21,44 +19,54 @@ A powerful Python-based packet filtering firewall with advanced security feature
 - 🔄 **IPTables Integration** - Apply rules directly to Linux kernel firewall
 - 📊 **Detailed Logging** - Comprehensive SQLite database for packet analysis
 
-## 🚀 Quick Start
+## 🚀 Setup & Usage
 
-### Prerequisites
+This firewall has been specifically developed and tested on **Kali Linux** (running on VMware). The testing environment included Metasploitable2 and Kali Linux itself.
 
-```bash
-# Install required dependencies
-sudo apt-get update
-sudo apt-get install -y python3-pip python3-scapy libpcap-dev
-pip3 install pyyaml scapy requests ipaddress
-```
+### Installation & Configuration
 
-### Installation
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/pyfirewall.git
+   cd pyfirewall
+   ```
 
-```bash
-# Clone the repository
-git clone https://github.com/VoidVampire/pyfirewall.git
-cd pyfirewall
-```
+2. **Install dependencies**
+   ```bash
+   # Install system requirements
+   sudo apt-get update
+   sudo apt-get install -y python3-pip python3-scapy libpcap-dev
+   
+   # Install Python dependencies
+   pip3 install -r requirements.txt
+   ```
 
-## 📝 Configuration
+3. **Configure the firewall** by editing `firewall_config.yaml`:
+   ```yaml
+   db_path: firewall.db
+   
+   # Define filtering rules
+   rules:
+     - action: block
+       protocol: 6  # TCP
+       dst_port: 10000  # Block TCP port 10000
+     - action: allow
+       protocol: 1  # ICMP
+       src_ip: 192.168.137.131  # Allow this specific IP
+     # Add more rules as needed
+       
+   # Optional: Specify regions to restrict (for testing purposes)
+   blocked_countries:
+     - XX  # Replace with actual country codes as needed
+     - YY
+   ```
 
-The firewall is configured through the `firewall_config.yaml` file:
+4. **Launch the firewall**
+   ```bash
+   # Root privileges required for packet sniffing
+   sudo python3 main.py
+   ```
 
-```yaml
-db_path: firewall.db
-rules:
-  - action: block
-    protocol: 6  # TCP
-    dst_port: 10000  # Block TCP port 10000
-  - action: allow
-    protocol: 1  # ICMP
-    src_ip: 192.168.137.131  # Allow this specific IP
-  # Add more rules as needed
-    
-blocked_countries:
-  - xx
-  - x
-```
 
 ## 🏗️ Architecture
 
@@ -73,61 +81,62 @@ PyFirewall consists of several modular components:
 | `antivirus.py` | Malicious signature detection in packets |
 | `config_loader.py` | YAML configuration parser |
 
-## 💻 Usage
 
-### Basic Operation
+## 💻 Daily Operations
+
+### Monitoring
+
+Monitor firewall activity in real-time:
 
 ```bash
-# Start the firewall with default configuration
-sudo python3 main.py
-
-# Monitor the logs
+# View the latest logged packets
 sqlite3 firewall.db "SELECT * FROM packet_logs ORDER BY timestamp DESC LIMIT 10;"
-```
 
-### Adding Custom Rules
-
-1. Edit `firewall_config.yaml` to add your rules
-2. Restart the firewall for changes to take effect
-
-### Viewing Detected Spoofed Packets
-
-```bash
+# Check detected spoofing attempts
 sqlite3 firewall.db "SELECT * FROM detailed_spoof_logs ORDER BY timestamp DESC;"
+
+# Monitor traffic from specific IP
+sqlite3 firewall.db "SELECT * FROM packet_logs WHERE src_ip = '192.168.1.100';"
 ```
 
-## 🔍 Spoofing Detection
+### Rule Management
 
-The system uses multiple techniques to detect IP spoofing:
+1. Edit `firewall_config.yaml` to modify your ruleset
+2. Restart the firewall for changes to take effect
+3. Monitor logs to verify rule effectiveness
 
-- TTL-based anomaly detection
-- Source routing analysis
-- Private IP validation
-- Network origin verification
-
-Each detection method contributes to a confidence score that determines if a packet is spoofed.
 
 ## 🛡️ Security Features
 
-### Flood Protection
+PyFirewall implements multiple security mechanisms to protect your network:
+
+### IP Spoofing Detection
+
+The system employs a multi-layered approach to identify spoofed packets:
+
+- **TTL Analysis** - Detects inconsistencies in Time-To-Live values that indicate packet manipulation
+- **Source Routing Detection** - Identifies packets with suspicious routing options
+- **Private IP Validation** - Verifies private addresses are coming from trusted networks
+- **Confidence Scoring** - Multiple detection methods contribute to an overall confidence score
+
+### Flood Attack Prevention
+
+Protection against common DoS/DDoS attacks:
 
 ```python
-# Configurable thresholds
+# Default thresholds (customizable)
 max_connections_per_ip = 3
 syn_timeout = 5  # seconds
 icmp_timeout = 5  # seconds
 ```
 
-### Country Blocking
+### Geographic Traffic Filtering
 
-Traffic from specified countries can be automatically blocked by adding country codes to the `blocked_countries` section in the config file.
+For testing and educational purposes, the firewall can filter traffic based on country of origin, which can be useful in development environments.
 
-## 📈 Performance Considerations
+### Malicious Signature Detection
 
-- For high-traffic environments, consider adjusting the flood protection thresholds
-- Database cleanup is performed periodically to prevent excessive growth
-- Consider using PyPy for improved performance on long-running instances
-
+The integrated antivirus module scans packet payloads for known malicious signatures and patterns.
 
 ## 📄 License
 
